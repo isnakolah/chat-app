@@ -1,40 +1,33 @@
-﻿using var httpClient = new HttpClient
+﻿using CLI.Services;
+using Shared.DTOs;
+
+const string session = "new-fire";
+const string userAlias = "isnakolah";
+
+using var chatService = new ChatService(session);
+
+static string GetMessageFromConsole()
 {
-    BaseAddress = new Uri("https://1rur03flf4.execute-api.us-east-1.amazonaws.com/Prod/")
-};
+    Write("Message: ");
 
-async Task<string> Add(int x, int y)
-{
-    var result = await httpClient.GetAsync($"calculator/add/{x}/{y}");
+    if (ReadLine() is not {Length: > 0} message)
+        throw new Exception("No message has been written.");
 
-    return await result.Content.ReadAsStringAsync();
-}
-
-static bool GetInputFromConsole(out int value)
-{
-    if (int.TryParse(ReadLine(), out value))
-        return true;
-
-    WriteLine("Your input is invalid, try again");
-
-    return false;
+    return message;
 }
 
 while (true)
 {
-    firstNumber:
-    Write("\nFirst number: ");
+    try
+    {
+        var message = GetMessageFromConsole();
 
-    if (!GetInputFromConsole(out var x))
-        goto firstNumber;
+        var chat = new ChatCreateDTO(message, session, userAlias);
 
-    secondNumber:
-    Write("Second number: ");
-
-    if (!GetInputFromConsole(out var y))
-        goto secondNumber;
-
-    var total = await Add(x, y);
-
-    WriteLine($"The total is {total}");
+        await chatService.SendChat(chat);
+    }
+    catch (Exception ex)
+    {
+        WriteLine(ex.Message);
+    }
 }
