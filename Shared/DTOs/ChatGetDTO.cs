@@ -1,3 +1,3 @@
 ﻿namespace Shared.DTOs;
 
-public record ChatGetDTO(string Message, string User);
+public record ChatGetDTO(string Message, string User, DateTime CreatedOn);

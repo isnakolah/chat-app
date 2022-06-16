@@ -5,6 +5,7 @@ namespace CLI.Services;
 
 public class ChatService : IDisposable
 {
+    private DateTime LastCreatedOn { get; set; }
     private readonly HttpClient httpClient = new()
     {
         BaseAddress = new Uri("https://1rur03flf4.execute-api.us-east-1.amazonaws.com/Prod/")
@@ -24,20 +25,23 @@ public class ChatService : IDisposable
         GetChatsWithEvents(session).ConfigureAwait(false);
     }
 
-    private static void c_ChatsReceived(object sender, IEnumerable<ChatGetDTO> chats)
+    private void c_ChatsReceived(object sender, IEnumerable<ChatGetDTO> chats)
     {
-        var enumeratedChats = chats as ChatGetDTO[] ?? chats.ToArray();
+        var orderedChats = (chats as ChatGetDTO[] ?? chats.ToArray())
+            .Where(chat => chat.CreatedOn > LastCreatedOn)
+            .OrderBy(chat => chat.CreatedOn)
+            .ToArray();
 
-        var chatsIsValid = enumeratedChats.Length > 0;
+        LastCreatedOn = orderedChats.Last().CreatedOn;
 
-        if (chatsIsValid)
-            WriteLine();
+        var chatsIsValid = orderedChats.Length > 0;
 
-        foreach (var chat in enumeratedChats)
-            WriteLine($"... {chat.User}: {chat.Message}");
+        if (chatsIsValid) WriteLine();
 
-        if (chatsIsValid)
-            Write("\nMessage: ");
+        foreach (var chat in orderedChats)
+            WriteLine($"... [{chat.CreatedOn.ToShortTimeString()}] {chat.User}: {chat.Message}");
+
+        if (chatsIsValid) Write("\nMessage: ");
     }
 
     public async Task SendChat(ChatCreateDTO chat)
