@@ -23,11 +23,16 @@ app.MapGet("/", () =>
     return response;
 });
 
-app.MapGet("/chats", async (IDynamoDBContext context, [FromQuery(Name = "session")] string session) =>
+app.MapGet("/chats", async (
+    IDynamoDBContext context, [FromQuery(Name = "session")] string session, [FromQuery(Name = "name")] string name) =>
 {
     ArgumentNullException.ThrowIfNull(session);
 
-    var conditions = new[] {new ScanCondition(nameof(Chat.Session), ScanOperator.Equal, session)};
+    var conditions = new[]
+    {
+        new ScanCondition(nameof(Chat.Session), ScanOperator.Equal, session), 
+        new ScanCondition(nameof(Chat.User), ScanOperator.NotEqual, name)
+    };
 
     var response = await context.ScanAsync<Chat>(conditions).GetRemainingAsync();
 

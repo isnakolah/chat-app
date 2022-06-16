@@ -6,6 +6,9 @@ namespace CLI.Services;
 public class ChatService : IDisposable
 {
     private DateTime LastCreatedOn { get; set; }
+    private string UserAlias { get; set; }
+    private string Session { get; set; }
+
     private readonly HttpClient httpClient = new()
     {
         BaseAddress = new Uri("https://1rur03flf4.execute-api.us-east-1.amazonaws.com/Prod/")
@@ -18,11 +21,13 @@ public class ChatService : IDisposable
         ChatsReceived.Invoke(this, chats);
     }
 
-    public ChatService(string session)
+    public ChatService(string session, string userName)
     {
         ChatsReceived += c_ChatsReceived!;
 
-        GetChatsWithEvents(session).ConfigureAwait(false);
+        (UserAlias, Session) = (userName, session);
+
+        GetChatsWithEvents().ConfigureAwait(false);
     }
 
     private void c_ChatsReceived(object sender, IEnumerable<ChatGetDTO> chats)
@@ -32,16 +37,16 @@ public class ChatService : IDisposable
             .OrderBy(chat => chat.CreatedOn)
             .ToArray();
 
+        if (orderedChats.Length == 0) return;
+
         LastCreatedOn = orderedChats.Last().CreatedOn;
 
-        var chatsIsValid = orderedChats.Length > 0;
-
-        if (chatsIsValid) WriteLine();
+        WriteLine();
 
         foreach (var chat in orderedChats)
             WriteLine($"... [{chat.CreatedOn.ToShortTimeString()}] {chat.User}: {chat.Message}");
 
-        if (chatsIsValid) Write("\nMessage: ");
+        Write("\nMessage: ");
     }
 
     public async Task SendChat(ChatCreateDTO chat)
@@ -49,20 +54,20 @@ public class ChatService : IDisposable
         await httpClient.PostAsJsonAsync("chats", chat);
     }
 
-    private async Task<IEnumerable<ChatGetDTO>> GetChats(string session)
+    private async Task<IEnumerable<ChatGetDTO>> GetChats()
     {
-        var result = await httpClient.GetFromJsonAsync<ChatGetDTO[]>($"chats?session={session}");
+        var result = await httpClient.GetFromJsonAsync<ChatGetDTO[]>($"chats?session={Session}&name={UserAlias}");
 
         return result ?? Enumerable.Empty<ChatGetDTO>();
     }
 
-    private async Task GetChatsWithEvents(string session)
+    private async Task GetChatsWithEvents()
     {
         while (true)
         {
-            await Task.Delay(10000);
+            await Task.Delay(3000);
 
-            var chats = await GetChats(session);
+            var chats = await GetChats();
 
             OnChatsReceived(chats);
         }

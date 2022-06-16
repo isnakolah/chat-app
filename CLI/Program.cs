@@ -1,26 +1,18 @@
 ﻿using CLI.Services;
 using Shared.DTOs;
 
-const string session = "new-fire";
-const string userAlias = "isnakolah";
+var session = GetSessionName();
+var userAlias = GetUserAlias();
 
-using var chatService = new ChatService(session);
-
-static string GetMessageFromConsole()
-{
-    Write("Message: ");
-
-    if (ReadLine() is not {Length: > 0} message)
-        throw new Exception("No message has been written.");
-
-    return message;
-}
+using var chatService = new ChatService(session, userAlias);
 
 while (true)
 {
     try
     {
-        var message = GetMessageFromConsole();
+        Write("Message: ");
+
+        var message = ReadStringFromConsole();
 
         var chat = new ChatCreateDTO(message, session, userAlias);
 
@@ -30,4 +22,26 @@ while (true)
     {
         WriteLine(ex.Message);
     }
+}
+
+static string GetUserAlias()
+{
+    Write("Enter your name: ");
+
+    return ReadStringFromConsole();
+}
+
+static string GetSessionName()
+{
+    Write("Enter session name: ");
+
+    return ReadStringFromConsole();
+}
+
+static string ReadStringFromConsole()
+{
+    if (ReadLine() is not {Length: > 0} text)
+        throw new Exception("No text has been written.");
+
+    return text;
 }
