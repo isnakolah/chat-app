@@ -7,7 +7,7 @@ public class ChatService : IDisposable
 {
     private readonly HttpClient httpClient = new()
     {
-        BaseAddress = new Uri("https://localhost:5001")
+        BaseAddress = new Uri("https://1rur03flf4.execute-api.us-east-1.amazonaws.com/Prod/")
     };
 
     public event EventHandler<IEnumerable<ChatGetDTO>> ChatsReceived;
@@ -34,7 +34,7 @@ public class ChatService : IDisposable
             WriteLine();
 
         foreach (var chat in enumeratedChats)
-            WriteLine($"{chat.User}: {chat.Message}");
+            WriteLine($"... {chat.User}: {chat.Message}");
 
         if (chatsIsValid)
             Write("\nMessage: ");
