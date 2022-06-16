@@ -5,6 +5,15 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{A41C49A0-BB38-4C57-AA37-ABD5EF415A98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLI", "CLI\CLI.csproj", "{63B09481-193E-4A00-A8F9-7B64A780A17F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{5E61921E-0179-41D4-A695-7EA7BFBE3ABE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VCS", "VCS", "{9461FBE8-EE3A-404B-9704-711EFCB95EDC}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +27,12 @@ Global
 		{A41C49A0-BB38-4C57-AA37-ABD5EF415A98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A41C49A0-BB38-4C57-AA37-ABD5EF415A98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A41C49A0-BB38-4C57-AA37-ABD5EF415A98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63B09481-193E-4A00-A8F9-7B64A780A17F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63B09481-193E-4A00-A8F9-7B64A780A17F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63B09481-193E-4A00-A8F9-7B64A780A17F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63B09481-193E-4A00-A8F9-7B64A780A17F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9461FBE8-EE3A-404B-9704-711EFCB95EDC} = {5E61921E-0179-41D4-A695-7EA7BFBE3ABE}
 	EndGlobalSection
 EndGlobal

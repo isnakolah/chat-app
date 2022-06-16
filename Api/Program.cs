@@ -1,19 +1,47 @@
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
+using Api.Models;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
+var awsOptions = builder.Configuration.GetAWSOptions();
 
-// Add services to the container.
-builder.Services.AddControllers();
-
-// Add AWS Lambda support. When application is run in Lambda Kestrel is swapped out as the web server with Amazon.Lambda.AspNetCoreServer. This
-// package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonDynamoDB>();
+builder.Services.AddScoped<IDynamoDBContext, DynamoDBContext>();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
 var app = builder.Build();
 
-
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
 
-app.MapGet("/", () => "Welcome to running ASP.NET Core Minimal API on AWS Lambda");
+app.MapGet("/", () =>
+{
+    var response = new {Message = "Welcome to chat app"};;
+    return response;
+});
+
+app.MapGet("/chats", async (IDynamoDBContext context, [FromQuery(Name = "session")] string session) =>
+{
+    ArgumentNullException.ThrowIfNull(session);
+
+    var conditions = new[] {new ScanCondition(nameof(Chat.Session), ScanOperator.Equal, session)};
+    var response = await context.ScanAsync<Chat>(conditions).GetRemainingAsync();
+
+    return response;
+});
+
+app.MapPost("/chats", async (IDynamoDBContext context, [FromBody] Chat request) =>
+{
+    var chat = new Chat
+    {
+        Id = 3,
+        Message = request.Message,
+        Session = request.Session,
+        User = request.User
+    };
+    await context.SaveAsync(chat);
+});
 
 app.Run();
