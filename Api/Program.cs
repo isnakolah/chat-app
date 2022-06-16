@@ -18,7 +18,8 @@ app.UseHttpsRedirection();
 
 app.MapGet("/", () =>
 {
-    var response = new {Message = "Welcome to chat app"};;
+    var response = new {Message = "Welcome to chat app"};
+
     return response;
 });
 
@@ -27,6 +28,7 @@ app.MapGet("/chats", async (IDynamoDBContext context, [FromQuery(Name = "session
     ArgumentNullException.ThrowIfNull(session);
 
     var conditions = new[] {new ScanCondition(nameof(Chat.Session), ScanOperator.Equal, session)};
+
     var response = await context.ScanAsync<Chat>(conditions).GetRemainingAsync();
 
     return response;
@@ -34,14 +36,9 @@ app.MapGet("/chats", async (IDynamoDBContext context, [FromQuery(Name = "session
 
 app.MapPost("/chats", async (IDynamoDBContext context, [FromBody] Chat request) =>
 {
-    var chat = new Chat
-    {
-        Id = 3,
-        Message = request.Message,
-        Session = request.Session,
-        User = request.User
-    };
-    await context.SaveAsync(chat);
+    var newChat = new Chat(request.Message, request.Session, request.User);
+
+    await context.SaveAsync(newChat);
 });
 
 app.Run();
