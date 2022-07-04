@@ -1,49 +1,32 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
+using Api.Data;
 using Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-var awsOptions = builder.Configuration.GetAWSOptions();
 
-builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonDynamoDB>();
+builder.Services.AddSingleton<ChatRepository>();
+builder.Services.AddSingleton<IChatRepository, CachedChatRepository>();
 builder.Services.AddScoped<IDynamoDBContext, DynamoDBContext>();
+builder.Services.AddMemoryCache();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", () =>
-{
-    var response = new {Message = "Welcome to chat app"};
-
-    return response;
-});
-
 app.MapGet("/chats", async (
-    IDynamoDBContext context, [FromQuery(Name = "session")] string session, [FromQuery(Name = "name")] string name) =>
+    [FromQuery(Name = "session")] string session, [FromQuery(Name = "user")] string user, IChatRepository repository) =>
 {
-    ArgumentNullException.ThrowIfNull(session);
-
-    var conditions = new[]
-    {
-        new ScanCondition(nameof(Chat.Session), ScanOperator.Equal, session), 
-        new ScanCondition(nameof(Chat.User), ScanOperator.NotEqual, name)
-    };
-
-    var response = await context.ScanAsync<Chat>(conditions).GetRemainingAsync();
-
-    return response;
+    return await repository.GetAllAsync(chat => chat.Session == session && chat.User != user);
 });
 
-app.MapPost("/chats", async (IDynamoDBContext context, [FromBody] Chat request) =>
+app.MapPost("/chats", async ([FromBody] Chat newChat, IChatRepository repository) =>
 {
-    var newChat = new Chat(request.Message, request.Session, request.User);
-
-    await context.SaveAsync(newChat);
+    await repository.AddAsync(newChat);
 });
 
 app.Run();
