@@ -39,38 +39,45 @@ internal sealed class ChatRepository : IChatRepository
         if (expression.Body is not BinaryExpression binaryExpression) 
             return conditions;
 
-        if (binaryExpression.Left is not BinaryExpression leftMemberExpression)
-            return conditions;
-
-        var (fieldName, value) = GetValue(leftMemberExpression);
-
-        var scanOperator = leftMemberExpression.NodeType switch
+        foreach (var exp in new[] { binaryExpression.Left, binaryExpression.Right })
         {
-            ExpressionType.Equal => ScanOperator.Equal,
-            ExpressionType.NotEqual => ScanOperator.NotEqual
-        };
+            if (exp is not BinaryExpression memberExpression)
+                continue;
 
-        if (fieldName is not null && value is not null)
-            conditions.Add(new ScanCondition(fieldName, scanOperator, value));
+            if (TryGetValue(memberExpression, out var fieldName, out var value, out var scanOperator))
+                conditions.Add(new ScanCondition(fieldName, scanOperator, value));
+        }
 
         return conditions;
     }
     
-    private static (string? FieldName, string? Value) GetValue(BinaryExpression binaryExpression)
+    private static bool TryGetValue(BinaryExpression binaryExpression, out string? fieldName, out string? value, out ScanOperator scanOperator)
     {
+        (fieldName, value, scanOperator) = (null, null, ScanOperator.IsNull);
+
         if (binaryExpression.Right is not MemberExpression rightMemberExpression)
-            return (null, null);
+            return false;
 
         if (binaryExpression.Left is not MemberExpression leftMemberExpression)
-            return (null, null);
+            return false;
 
         if (rightMemberExpression.Expression is not ConstantExpression leftMemberConstantExpression)
-            return (null, null);
+            return false;
 
-        var fieldName = leftMemberExpression.Member.Name;
+        fieldName = leftMemberExpression.Member.Name;
 
-        var value = leftMemberConstantExpression.Value!.GetType().GetField(fieldName.ToLower())!.GetValue(leftMemberConstantExpression.Value);
+        value = leftMemberConstantExpression.Value!
+            .GetType()
+            .GetField(fieldName.ToLower())!
+            .GetValue(leftMemberConstantExpression.Value) as string;
 
-        return (fieldName, (string)value!);
+        scanOperator = binaryExpression.NodeType switch
+        {
+            ExpressionType.Equal => ScanOperator.Equal,
+            ExpressionType.NotEqual => ScanOperator.NotEqual,
+            _ => throw new Exception("No scan operator configured")
+        };
+
+        return true;
     }
 }

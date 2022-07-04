@@ -24,11 +24,7 @@ internal class CachedChatRepository : IChatRepository
 
     public async Task<IEnumerable<Chat>> GetAllAsync(Expression<Func<Chat, bool>> expression)
     {
-        var key = $"chats-{expression.Name}";
-
-        CacheKeys.Add(key);
-
-        return await _cache.GetOrCreateAsync(key, async _ => await _repository.GetAllAsync(expression));
+        return await _repository.GetAllAsync(expression);
     }
 
     public async Task AddAsync(Chat chat)
