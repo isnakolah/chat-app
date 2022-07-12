@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2.DataModel;
 using Api.Data;
 using Api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Shared.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +25,15 @@ app.MapGet("/chats", async (
     return await repository.GetAllAsync(chat => chat.Session == session && chat.User != user);
 });
 
-app.MapPost("/chats", async ([FromBody] Chat newChat, [FromServices] IChatRepository repository) =>
+app.MapPost("/chats", async ([FromBody] ChatCreateDTO newChatDto, [FromServices] IChatRepository repository) =>
 {
+    var newChat = new Chat
+    {
+        Message = newChatDto.Message,
+        Session = newChatDto.Session,
+        User = newChatDto.User
+    };
+
     await repository.AddAsync(newChat);
 });
 

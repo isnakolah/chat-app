@@ -2,7 +2,7 @@
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Api.Models;
-using Expression = System.Linq.Expressions.Expression;
+using Shared.DTOs;
 
 namespace Api.Data;
 
@@ -20,11 +20,13 @@ internal sealed class ChatRepository : IChatRepository
         return await _context.ScanAsync<Chat>(default).GetRemainingAsync();
     }
 
-    public async Task<IEnumerable<Chat>> GetAllAsync(Expression<Func<Chat, bool>> expression)
+    public async Task<IEnumerable<ChatGetDTO>> GetAllAsync(Expression<Func<Chat, bool>> expression)
     {
         var conditions = GetConditions(expression);
 
-        return await _context.ScanAsync<Chat>(conditions).GetRemainingAsync();
+        var chats = await _context.ScanAsync<Chat>(conditions).GetRemainingAsync();
+
+        return chats.Select(chat => new ChatGetDTO(chat.Message, chat.User, chat.CreatedOn));
     }
 
     public async Task AddAsync(Chat chat)
