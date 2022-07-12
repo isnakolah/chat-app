@@ -1,4 +1,6 @@
 ﻿using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using Shared.DTOs;
 
 namespace CLI.Services;
@@ -56,7 +58,7 @@ public class ChatService : IDisposable
 
     private async Task<IEnumerable<ChatGetDTO>> GetChats()
     {
-        var result = await httpClient.GetFromJsonAsync<ChatGetDTO[]>($"chats?session={Session}&name={UserAlias}");
+        var result = await httpClient.GetFromJsonAsync<ChatGetDTO[]>($"chats?session={Session}&user={UserAlias}");
 
         return result ?? Enumerable.Empty<ChatGetDTO>();
     }
