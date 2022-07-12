@@ -19,12 +19,12 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.MapGet("/chats", async (
-    [FromQuery(Name = "session")] string session, [FromQuery(Name = "user")] string user, IChatRepository repository) =>
+    [FromQuery(Name = "session")] string session, [FromQuery(Name = "user")] string user, [FromServices] IChatRepository repository) =>
 {
     return await repository.GetAllAsync(chat => chat.Session == session && chat.User != user);
 });
 
-app.MapPost("/chats", async ([FromBody] Chat newChat, IChatRepository repository) =>
+app.MapPost("/chats", async ([FromBody] Chat newChat, [FromServices] IChatRepository repository) =>
 {
     await repository.AddAsync(newChat);
 });
