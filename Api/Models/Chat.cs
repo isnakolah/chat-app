@@ -9,7 +9,7 @@ public record Chat
 {
     [JsonIgnore]
     [DynamoDBHashKey("timestamp")]
-    public long Timestamp { get; init; } = DateTime.Now.DateTimeToUnixTimestamp();
+    public long Timestamp { get; init; } = DateTime.Now.ToMillisecondsTimestamp();
 
     [DynamoDBProperty("message")]
     public string Message { get; init; } = default!;
@@ -20,5 +20,5 @@ public record Chat
     [DynamoDBProperty("user")]
     public string User { get; init; } = default!;
 
-    public DateTime CreatedOn => Timestamp.UnixTimeStampToDateTime();
+    public DateTime CreatedOn => Timestamp.ToDateTime();
 }

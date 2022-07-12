@@ -2,18 +2,18 @@
 
 internal static class Timestamp
 {
-    public static long DateTimeToUnixTimestamp(this DateTime dateTime)
+    public static long ToMillisecondsTimestamp(this DateTime dateTime)
     {
-        var timestamp = new DateTimeOffset(dateTime).ToUnixTimeSeconds();
+        var milliseconds = new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
 
-        return timestamp;
+        return milliseconds;
     }
 
-    public static DateTime UnixTimeStampToDateTime(this long unixTimestamp)
+    public static DateTime ToDateTime(this long milliseconds)
     {
         var nineteenSeventy = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var convertedTime = nineteenSeventy.AddSeconds(unixTimestamp).ToLocalTime();
+        var convertedTime = nineteenSeventy.AddMilliseconds(milliseconds).ToLocalTime();
 
         return convertedTime;
     }
